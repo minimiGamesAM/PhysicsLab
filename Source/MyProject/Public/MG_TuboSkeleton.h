@@ -23,7 +23,7 @@ protected:
 
 	virtual void PostInitializeComponents() override;
 
-	UPROPERTY(EditAnywhere, Category = "Bodies")
+	UPROPERTY(VisibleAnywhere, Category = "Bodies")
 	float Masa = 1.0f;
 
 	UPROPERTY(EditAnywhere, Category = "Connection")

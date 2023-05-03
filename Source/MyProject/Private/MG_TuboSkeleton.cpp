@@ -35,30 +35,6 @@ void AMG_TuboSkeleton::PostInitializeComponents()
 			
 			ConstAccessor.Modify();
 		}
-
-		////
-		///
-		
-		auto phya = SkelMeshCompones->GetPhysicsAsset();
-
-		if (phya)
-		{
-			TArray<int32> bbIndex;
-			phya->GetBodyIndicesBelow(bbIndex, FName("Bone"), SkelMeshCompones->GetSkeletalMeshAsset(), true);
-
-			for (int32& Bindx : bbIndex)
-			{
-				//auto col = phya->GetPrimitiveCollision(Bindx, EAggCollisionShape::TaperedCapsule, );
-			}
-		}
-		
-
-		//auto* malla = SkelMeshCompones->GetSkeletalMeshAsset();
-		//malla->getGetPhysicsAsset()
-		//auto col = phya->GetPrimitiveCollision(1, EAggCollisionShape::TaperedCapsule);
-		//UBodySetup* BodyPhy = SkelMeshCompones->GetBodySetup();
-
-		//BodyPhy->GetPhysMaterial()->
 	}
 }
 
@@ -67,7 +43,12 @@ void AMG_TuboSkeleton::PostInitializeComponents()
 void AMG_TuboSkeleton::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	if (SkelMeshCompones)
+	{
+		// Here the mass is calculated. UBodySetup::CalculateMass(const UPrimitiveComponent* Component) const
+		Masa = SkelMeshCompones->GetMass();
+	}
 }
 
 // Called every frame
@@ -85,9 +66,8 @@ void AMG_TuboSkeleton::Tick(float DeltaTime)
 			FConstraintInstance* ConstInst = ConstAccessor.Get();
 
 			float StiffnessSuave = ConstInst->GetSoftSwingLimitStiffness();
-			FString Mensaje = FString::Printf(TEXT("Stiffness Skeleton : %f, %f"), StiffnessSuave, SkelMeshCompones->GetMass());
+			FString Mensaje = FString::Printf(TEXT("Stiffness Skeleton : %f, masa %f"), StiffnessSuave, SkelMeshCompones->GetMass());
 			GEngine->AddOnScreenDebugMessage(-1, 0.0f, FColor::Red, Mensaje);
-			
 		}
 	}
 }
