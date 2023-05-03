@@ -41,13 +41,17 @@ void AMG_TuboSkeleton::PostInitializeComponents()
 		
 		auto phya = SkelMeshCompones->GetPhysicsAsset();
 
-		TArray<int32> bbIndex;
-		phya->GetBodyIndicesBelow(bbIndex, FName("Bone"), SkelMeshCompones->GetSkeletalMeshAsset(), true);
-
-		for (int32& Bindx : bbIndex)
+		if (phya)
 		{
-			//auto col = phya->GetPrimitiveCollision(Bindx, EAggCollisionShape::TaperedCapsule, );
+			TArray<int32> bbIndex;
+			phya->GetBodyIndicesBelow(bbIndex, FName("Bone"), SkelMeshCompones->GetSkeletalMeshAsset(), true);
+
+			for (int32& Bindx : bbIndex)
+			{
+				//auto col = phya->GetPrimitiveCollision(Bindx, EAggCollisionShape::TaperedCapsule, );
+			}
 		}
+		
 
 		//auto* malla = SkelMeshCompones->GetSkeletalMeshAsset();
 		//malla->getGetPhysicsAsset()
