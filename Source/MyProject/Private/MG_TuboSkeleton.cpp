@@ -3,19 +3,35 @@
 
 #include "MG_TuboSkeleton.h"
 
+#include "MG_Spline.h"
 #include "PhysicsEngine/PhysicsConstraintComponent.h"
+#include "PhysicsEngine/PhysicsHandleComponent.h"
+#include "Components/SplineComponent.h"
 
 // Sets default values
 AMG_TuboSkeleton::AMG_TuboSkeleton()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
+	
+	for (int i = 0; i < 4; ++i)
+	{
+		FName HandleName = FName(FString::Printf(TEXT("PhyHandleNombre%i"), i));
+		UPhysicsHandleComponent* PhComp = CreateDefaultSubobject<UPhysicsHandleComponent>(HandleName);
+	
+		HandlesForConstraint.Add(PhComp);
+	}
 }
 
 void AMG_TuboSkeleton::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
+
+	//FName HandleName = FName(FString::Printf(TEXT("PhyHandleNombre%i"), 0));
+	//MyPhysicsHandle = CreateDefaultSubobject<UPhysicsHandleComponent>("PhCmp");
+	//
+	//HandlesForConstraint.Add(MyPhysicsHandle);
+
 
 	SkelMeshCompones = Cast<USkeletalMeshComponent>(GetComponentByClass(USkeletalMeshComponent::StaticClass()));
 
@@ -46,9 +62,18 @@ void AMG_TuboSkeleton::PostInitializeComponents()
 			
 			ConstAccessor.Modify();
 		}
+
+		int32 NbBones = SkelMeshCompones->GetNumBones();
+				
+		//for (int i = 0; i < NbBones; ++i)
+		//{
+		//	FName HandleName = FName(FString::Printf(TEXT("PhyHandleNombre%i"), i));
+		//	UPhysicsHandleComponent* PhComp = CreateDefaultSubobject<UPhysicsHandleComponent>(HandleName);
+		//
+		//	HandlesForConstraint.Add(PhComp);
+		//}
 	}
 }
-
 
 // Called when the game starts or when spawned
 void AMG_TuboSkeleton::BeginPlay()
@@ -59,6 +84,15 @@ void AMG_TuboSkeleton::BeginPlay()
 	{
 		// Here the mass is calculated. UBodySetup::CalculateMass(const UPrimitiveComponent* Component) const
 		Masa = SkelMeshCompones->GetMass();
+	}
+
+	for (int i = 0; i < HandlesForConstraint.Num(); ++i)
+	{
+		UPrimitiveComponent* PriComp = Cast<UPrimitiveComponent>(SkelMeshCompones);
+		FName BoneName = SkelMeshCompones->GetBoneName(i);
+		FVector SocketPos = SkelMeshCompones->GetSocketLocation(BoneName);
+
+		HandlesForConstraint[i]->GrabComponentAtLocation(PriComp, BoneName, SocketPos);
 	}
 }
 
@@ -79,6 +113,23 @@ void AMG_TuboSkeleton::Tick(float DeltaTime)
 			float StiffnessSuave = ConstInst->GetSoftSwingLimitStiffness();
 			FString Mensaje = FString::Printf(TEXT("Stiffness Skeleton : %f, masa %f"), StiffnessSuave, SkelMeshCompones->GetMass());
 			GEngine->AddOnScreenDebugMessage(-1, 0.0f, FColor::Red, Mensaje);
+		}
+
+		for (int i = 0; i < HandlesForConstraint.Num(); ++i)
+		{
+			FName BoneName = SkelMeshCompones->GetBoneName(i);
+			FVector SocketPos = SkelMeshCompones->GetSocketLocation(BoneName);
+
+			//SplineGuide = Cast<AMG_Spline>(SplineGuide.GetDefaultObject()); // Cast<AMG_Spline>(SplineGuide.Get());
+
+			if (SplineGuide)// && SplineReference->SplineComp)
+			{
+				if (SplineGuide->SplineComp)
+				{
+					FVector Pos = SplineGuide->SplineComp->FindLocationClosestToWorldLocation(SocketPos, ESplineCoordinateSpace::World);
+					HandlesForConstraint[i]->SetTargetLocation(Pos);
+				}
+			}
 		}
 	}
 }

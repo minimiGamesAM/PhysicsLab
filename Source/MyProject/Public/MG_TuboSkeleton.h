@@ -7,6 +7,8 @@
 #include "MG_TuboSkeleton.generated.h"
 
 class USkeletalMeshComponent;
+class UPhysicsHandleComponent;
+class AMG_Spline;
 
 UCLASS()
 class MYPROJECT_API AMG_TuboSkeleton : public AActor
@@ -40,6 +42,16 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, Category = "Body")
 	USkeletalMeshComponent* SkelMeshCompones;
+
+	UPROPERTY(EditAnywhere, Category = "Constraint")
+	AMG_Spline* SplineGuide = nullptr;
+
+	UPROPERTY(EditAnywhere, Category = "Constraint")
+	TArray<UPhysicsHandleComponent*> HandlesForConstraint;
+
+	UPROPERTY(EditAnywhere, Category = "Constraint")
+	UPhysicsHandleComponent* MyPhysicsHandle = nullptr;
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
