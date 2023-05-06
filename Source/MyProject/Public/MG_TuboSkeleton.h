@@ -23,6 +23,9 @@ protected:
 
 	virtual void PostInitializeComponents() override;
 
+	UPROPERTY(EditAnywhere, Category = "Connection")
+	int MovTipo = 1;
+
 	UPROPERTY(VisibleAnywhere, Category = "Bodies")
 	float Masa = 1.0f;
 

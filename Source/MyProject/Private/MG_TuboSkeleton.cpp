@@ -28,8 +28,19 @@ void AMG_TuboSkeleton::PostInitializeComponents()
 		{
 			FConstraintInstance* ConstInst = ConstAccessor.Get();
 
-			ConstInst->SetAngularSwing1Limit(EAngularConstraintMotion::ACM_Limited, AngularSwingLimite1);
-			ConstInst->SetAngularSwing2Limit(EAngularConstraintMotion::ACM_Limited, AngularSwingLimite2);
+			EAngularConstraintMotion MotionType = EAngularConstraintMotion::ACM_Free;
+
+			if (MovTipo == 1)
+			{
+				MotionType = EAngularConstraintMotion::ACM_Limited;
+			}
+			else if(MovTipo == 2)
+			{
+				MotionType = EAngularConstraintMotion::ACM_Locked;
+			}
+						
+			ConstInst->SetAngularSwing1Limit(MotionType, AngularSwingLimite1);
+			ConstInst->SetAngularSwing2Limit(MotionType, AngularSwingLimite2);
 
 			ConstInst->SetSoftSwingLimitParams(true, Stiffness, 1.0f, 0.0f, 1.0f);
 			
