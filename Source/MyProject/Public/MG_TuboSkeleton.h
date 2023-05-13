@@ -40,17 +40,20 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Connection")
 	float AngularSwingLimite2 = 0.0f;
 
+	UPROPERTY(VisibleAnywhere, Category = "Connection")
+	int32 NbBones = 0.0f;
+
 	UPROPERTY(VisibleAnywhere, Category = "Body")
 	USkeletalMeshComponent* SkelMeshCompones;
 
 	UPROPERTY(EditAnywhere, Category = "Constraint")
 	AMG_Spline* SplineGuide = nullptr;
 
-	UPROPERTY(EditAnywhere, Category = "Constraint")
+	UPROPERTY(VisibleAnywhere, Category = "Constraint")
 	TArray<UPhysicsHandleComponent*> HandlesForConstraint;
 
-	UPROPERTY(EditAnywhere, Category = "Constraint")
-	UPhysicsHandleComponent* MyPhysicsHandle = nullptr;
+	//UPROPERTY(EditAnywhere, Category = "Constraint")
+	//UPhysicsHandleComponent* MyPhysicsHandle = nullptr;
 
 public:	
 	// Called every frame

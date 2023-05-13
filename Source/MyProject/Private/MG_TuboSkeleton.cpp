@@ -13,13 +13,11 @@ AMG_TuboSkeleton::AMG_TuboSkeleton()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-	
-	for (int i = 0; i < 4; ++i)
+
+	for (int i = 0; i < 32; ++i)
 	{
 		FName HandleName = FName(FString::Printf(TEXT("PhyHandleNombre%i"), i));
 		UPhysicsHandleComponent* PhComp = CreateDefaultSubobject<UPhysicsHandleComponent>(HandleName);
-	
-		HandlesForConstraint.Add(PhComp);
 	}
 }
 
@@ -46,6 +44,7 @@ void AMG_TuboSkeleton::PostInitializeComponents()
 
 			EAngularConstraintMotion MotionType = EAngularConstraintMotion::ACM_Free;
 
+			
 			if (MovTipo == 1)
 			{
 				MotionType = EAngularConstraintMotion::ACM_Limited;
@@ -63,7 +62,7 @@ void AMG_TuboSkeleton::PostInitializeComponents()
 			ConstAccessor.Modify();
 		}
 
-		int32 NbBones = SkelMeshCompones->GetNumBones();
+		NbBones = SkelMeshCompones->GetNumBones();
 				
 		//for (int i = 0; i < NbBones; ++i)
 		//{
@@ -80,19 +79,37 @@ void AMG_TuboSkeleton::BeginPlay()
 {
 	Super::BeginPlay();
 
+	TArray<UActorComponent*> comps;
+
+	this->GetComponents(comps);
+
+	HandlesForConstraint.Empty();
+
+	for (int i = 0; i < comps.Num(); ++i) //Because there may be more components
+	{
+		UPhysicsHandleComponent* thisCompP = Cast<UPhysicsHandleComponent>(comps[i]); //try to cast to static mesh component
+		if (thisCompP)
+		{
+			HandlesForConstraint.Add(thisCompP);
+		}
+	}
+
 	if (SkelMeshCompones)
 	{
 		// Here the mass is calculated. UBodySetup::CalculateMass(const UPrimitiveComponent* Component) const
 		Masa = SkelMeshCompones->GetMass();
 	}
 
-	for (int i = 0; i < HandlesForConstraint.Num(); ++i)
+	if (SplineGuide)
 	{
-		UPrimitiveComponent* PriComp = Cast<UPrimitiveComponent>(SkelMeshCompones);
-		FName BoneName = SkelMeshCompones->GetBoneName(i);
-		FVector SocketPos = SkelMeshCompones->GetSocketLocation(BoneName);
+		for (int i = 0; i < HandlesForConstraint.Num(); ++i)
+		{
+			UPrimitiveComponent* PriComp = Cast<UPrimitiveComponent>(SkelMeshCompones);
+			FName BoneName = SkelMeshCompones->GetBoneName(i);
+			FVector SocketPos = SkelMeshCompones->GetSocketLocation(BoneName);
 
-		HandlesForConstraint[i]->GrabComponentAtLocation(PriComp, BoneName, SocketPos);
+			HandlesForConstraint[i]->GrabComponentAtLocation(PriComp, BoneName, SocketPos);
+		}
 	}
 }
 
@@ -106,24 +123,23 @@ void AMG_TuboSkeleton::Tick(float DeltaTime)
 		TArray<FConstraintInstanceAccessor> ConstAccessorArray;
 		SkelMeshCompones->GetConstraints(true, ConstAccessorArray);
 
-		for (FConstraintInstanceAccessor& ConstAccessor : ConstAccessorArray)
+		//for (FConstraintInstanceAccessor& ConstAccessor : ConstAccessorArray)
+		//{
+			//FConstraintInstance* ConstInst = ConstAccessor.Get();
+
+			//float StiffnessSuave = ConstInst->GetSoftSwingLimitStiffness();
+			//FString Mensaje = FString::Printf(TEXT("Stiffness Skeleton : %f, masa %f"), StiffnessSuave, SkelMeshCompones->GetMass());
+			//GEngine->AddOnScreenDebugMessage(-1, 0.0f, FColor::Red, Mensaje);
+		//}
+
+		if (SplineGuide)
 		{
-			FConstraintInstance* ConstInst = ConstAccessor.Get();
-
-			float StiffnessSuave = ConstInst->GetSoftSwingLimitStiffness();
-			FString Mensaje = FString::Printf(TEXT("Stiffness Skeleton : %f, masa %f"), StiffnessSuave, SkelMeshCompones->GetMass());
-			GEngine->AddOnScreenDebugMessage(-1, 0.0f, FColor::Red, Mensaje);
-		}
-
-		for (int i = 0; i < HandlesForConstraint.Num(); ++i)
-		{
-			FName BoneName = SkelMeshCompones->GetBoneName(i);
-			FVector SocketPos = SkelMeshCompones->GetSocketLocation(BoneName);
-
-			//SplineGuide = Cast<AMG_Spline>(SplineGuide.GetDefaultObject()); // Cast<AMG_Spline>(SplineGuide.Get());
-
-			if (SplineGuide)// && SplineReference->SplineComp)
+			for (int i = 0; i < HandlesForConstraint.Num(); ++i)
 			{
+				FName BoneName = SkelMeshCompones->GetBoneName(i);
+				FVector SocketPos = SkelMeshCompones->GetSocketLocation(BoneName);
+
+				//SplineGuide = Cast<AMG_Spline>(SplineGuide.GetDefaultObject()); // Cast<AMG_Spline>(SplineGuide.Get());
 				if (SplineGuide->SplineComp)
 				{
 					FVector Pos = SplineGuide->SplineComp->FindLocationClosestToWorldLocation(SocketPos, ESplineCoordinateSpace::World);
