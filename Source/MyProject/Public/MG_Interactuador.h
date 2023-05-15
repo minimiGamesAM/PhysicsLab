@@ -6,6 +6,10 @@
 #include "GameFramework/Pawn.h"
 #include "MG_Interactuador.generated.h"
 
+class UMG_DragComponent;
+class UPhysicsHandleComponent;
+class UCameraComponent;
+
 UCLASS()
 class MYPROJECT_API AMG_Interactuador : public APawn
 {
@@ -19,6 +23,17 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	virtual void PostInitializeComponents() override;
+
+	UPROPERTY(EditAnywhere)
+	UMG_DragComponent* DragComp;
+
+	UPROPERTY(EditAnywhere)
+	UPhysicsHandleComponent* PhyHandleComp;
+
+	UPROPERTY(VisibleAnywhere)
+	UCameraComponent* CameraComp;
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -30,5 +45,9 @@ public:
 	void MoverAdelante(float Val);
 
 	void MoverLados(float Val);
+
+	void PickObject();
+
+	void ReleaseObject();
 
 };

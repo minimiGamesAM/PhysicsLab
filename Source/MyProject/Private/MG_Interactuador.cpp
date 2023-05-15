@@ -3,12 +3,18 @@
 
 #include "MG_Interactuador.h"
 
+#include "MG_DragComponent.h"
+#include "PhysicsEngine/PhysicsHandleComponent.h"
+#include "Camera/CameraComponent.h"
+
 // Sets default values
 AMG_Interactuador::AMG_Interactuador()
 {
  	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+    DragComp = CreateDefaultSubobject<UMG_DragComponent>("DragComp");
+    PhyHandleComp = CreateDefaultSubobject<UPhysicsHandleComponent>("PhyHandleComp");
 }
 
 // Called when the game starts or when spawned
@@ -16,6 +22,13 @@ void AMG_Interactuador::BeginPlay()
 {
 	Super::BeginPlay();
 	
+}
+
+void AMG_Interactuador::PostInitializeComponents()
+{
+    Super::PostInitializeComponents();
+
+    CameraComp = FindComponentByClass<UCameraComponent>();
 }
 
 // Called every frame
@@ -53,6 +66,25 @@ void AMG_Interactuador::MoverLados(float Val)
     }
 }
 
+void AMG_Interactuador::PickObject()
+{
+    if (DragComp->BeginDrag())
+    {
+        if (CameraComp)
+        {
+            CameraComp->bUsePawnControlRotation = false;
+        }
+    }
+}
+
+void AMG_Interactuador::ReleaseObject()
+{
+    DragComp->EndDrag();
+    CameraComp->bUsePawnControlRotation = true;
+
+    UE_LOG(LogTemp, Warning, TEXT("SOLTANDO OBJETO."));
+}
+
 // Called to bind functionality to input
 void AMG_Interactuador::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
@@ -66,7 +98,8 @@ void AMG_Interactuador::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
     PlayerInputComponent->BindAxis("Girar", this, &AMG_Interactuador::AddControllerYawInput);
     PlayerInputComponent->BindAxis("Mirar", this, &AMG_Interactuador::AddControllerPitchInput);
 
-    //PlayerInputComponent->BindAction("Pick", IE_Pressed, this, &AMG_Interactuador::PickObject);
+    PlayerInputComponent->BindAction("Pick", IE_Pressed, this, &AMG_Interactuador::PickObject);
+    PlayerInputComponent->BindAction("Pick", IE_Released, this, &AMG_Interactuador::ReleaseObject);
 
 }
 
