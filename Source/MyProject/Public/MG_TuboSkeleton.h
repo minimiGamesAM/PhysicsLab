@@ -52,6 +52,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = "Constraint")
 	TArray<UPhysicsHandleComponent*> HandlesForConstraint;
 
+	UPROPERTY(VisibleAnywhere, Category = "Constraint")
+	UPhysicsHandleComponent* Pusher;
+
 	//UPROPERTY(EditAnywhere, Category = "Constraint")
 	//UPhysicsHandleComponent* MyPhysicsHandle = nullptr;
 

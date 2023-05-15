@@ -20,6 +20,10 @@ public:
 	UPROPERTY(VisibleAnywhere, Category = "SplineComp")
 	USplineComponent* SplineComp;
 
+	UPROPERTY(EditAnywhere)
+	float RadiusDebugSphere = 5.0f;
+
+	bool PossesObject;
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

@@ -19,6 +19,8 @@ AMG_TuboSkeleton::AMG_TuboSkeleton()
 		FName HandleName = FName(FString::Printf(TEXT("PhyHandleNombre%i"), i));
 		UPhysicsHandleComponent* PhComp = CreateDefaultSubobject<UPhysicsHandleComponent>(HandleName);
 	}
+
+	Pusher = CreateDefaultSubobject<UPhysicsHandleComponent>("Pusher");
 }
 
 void AMG_TuboSkeleton::PostInitializeComponents()
@@ -109,6 +111,11 @@ void AMG_TuboSkeleton::BeginPlay()
 			FVector SocketPos = SkelMeshCompones->GetSocketLocation(BoneName);
 
 			HandlesForConstraint[i]->GrabComponentAtLocation(PriComp, BoneName, SocketPos);
+
+			if (i == HandlesForConstraint.Num() - 1)
+			{
+				Pusher->GrabComponentAtLocation(PriComp, BoneName, SocketPos);
+			}
 		}
 	}
 }
@@ -144,6 +151,12 @@ void AMG_TuboSkeleton::Tick(float DeltaTime)
 				{
 					FVector Pos = SplineGuide->SplineComp->FindLocationClosestToWorldLocation(SocketPos, ESplineCoordinateSpace::World);
 					HandlesForConstraint[i]->SetTargetLocation(Pos);
+
+					if (i == HandlesForConstraint.Num() - 1)
+					{
+						FVector PosSplineEnd = SplineGuide->SplineComp->GetLocationAtDistanceAlongSpline(SplineGuide->SplineComp->GetSplineLength(), ESplineCoordinateSpace::World);
+						Pusher->SetTargetLocation(PosSplineEnd);
+					}
 				}
 			}
 		}

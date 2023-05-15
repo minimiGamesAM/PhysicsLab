@@ -25,6 +25,12 @@ void AMG_Spline::BeginPlay()
 {
 	Super::BeginPlay();
 	SplineComp = FindComponentByClass<USplineComponent>();
+
+	if (SplineComp)
+	{
+		FVector PosSplineEnd = SplineComp->GetLocationAtDistanceAlongSpline(SplineComp->GetSplineLength(), ESplineCoordinateSpace::World);
+		DrawDebugSphere(GetWorld(), PosSplineEnd, RadiusDebugSphere, 32, FColor::Green, true);
+	}
 }
 
 // Called every frame
