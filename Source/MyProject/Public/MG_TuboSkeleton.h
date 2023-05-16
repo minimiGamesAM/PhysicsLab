@@ -52,8 +52,14 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = "Constraint")
 	TArray<UPhysicsHandleComponent*> HandlesForConstraint;
 
+	UPROPERTY(EditAnywhere, Category = "Constraint")
+	float LinearStiffnessInSpline = 800.0f;
+
 	UPROPERTY(VisibleAnywhere, Category = "Constraint")
 	UPhysicsHandleComponent* Pusher;
+
+	UPROPERTY(EditAnywhere, Category = "Navigacion")
+	int32 BoneStart = 0;
 
 	//UPROPERTY(EditAnywhere, Category = "Constraint")
 	//UPhysicsHandleComponent* MyPhysicsHandle = nullptr;
@@ -61,5 +67,8 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+	UFUNCTION(BlueprintCallable, Category = "Navigacion")
+	void InsertTubo(float DeltaInsertion);
 
 };

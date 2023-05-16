@@ -2,6 +2,8 @@
 
 
 #include "MG_DragComponent.h"
+
+#include "MG_TuboSkeleton.h"
 #include "PhysicsEngine/PhysicsHandleComponent.h"
 
 
@@ -69,10 +71,16 @@ bool UMG_DragComponent::BeginDrag()
 			LocalRot = MyOwner->GetTransform().InverseTransformRotation(Hit.GetActor()->GetActorRotation().Quaternion());
 			LocalPos = MyOwner->GetTransform().InverseTransformPosition(Hit.ImpactPoint);
 
-			PhysHandleComp->GrabComponentAtLocationWithRotation(Hit.GetComponent(),
-				Hit.BoneName,
-				Hit.ImpactPoint,
-				Hit.GetActor()->GetActorRotation());
+			//PhysHandleComp->GrabComponentAtLocationWithRotation(Hit.GetComponent(),
+			//	Hit.BoneName,
+			//	Hit.ImpactPoint,
+			//	Hit.GetActor()->GetActorRotation());
+			//
+
+			if (AMG_TuboSkeleton* tt = Cast<AMG_TuboSkeleton>(HitActor))
+			{
+				tt->InsertTubo(5.0f);
+			}
 
 			break;
 		}

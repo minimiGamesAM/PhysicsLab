@@ -28,8 +28,9 @@ void AMG_Spline::BeginPlay()
 
 	if (SplineComp)
 	{
-		FVector PosSplineEnd = SplineComp->GetLocationAtDistanceAlongSpline(SplineComp->GetSplineLength(), ESplineCoordinateSpace::World);
-		DrawDebugSphere(GetWorld(), PosSplineEnd, RadiusDebugSphere, 32, FColor::Green, true);
+		//FVector PosSplineEnd = SplineComp->GetLocationAtDistanceAlongSpline(SplineComp->GetSplineLength(), ESplineCoordinateSpace::World);
+		FVector PosSpline = SplineComp->GetLocationAtDistanceAlongSpline(0.0f, ESplineCoordinateSpace::World);
+		DrawDebugSphere(GetWorld(), PosSpline, RadiusDebugSphere, 32, FColor::Green, true);
 	}
 }
 

@@ -92,6 +92,7 @@ void AMG_TuboSkeleton::BeginPlay()
 		UPhysicsHandleComponent* thisCompP = Cast<UPhysicsHandleComponent>(comps[i]); //try to cast to static mesh component
 		if (thisCompP)
 		{
+			thisCompP->SetLinearStiffness(LinearStiffnessInSpline);
 			HandlesForConstraint.Add(thisCompP);
 		}
 	}
@@ -104,15 +105,15 @@ void AMG_TuboSkeleton::BeginPlay()
 
 	if (SplineGuide)
 	{
-		for (int i = 0; i < HandlesForConstraint.Num(); ++i)
+		for (int i = 0; i < SkelMeshCompones->GetNumBones(); ++i)
 		{
 			UPrimitiveComponent* PriComp = Cast<UPrimitiveComponent>(SkelMeshCompones);
 			FName BoneName = SkelMeshCompones->GetBoneName(i);
 			FVector SocketPos = SkelMeshCompones->GetSocketLocation(BoneName);
-
+			
 			HandlesForConstraint[i]->GrabComponentAtLocation(PriComp, BoneName, SocketPos);
 
-			if (i == HandlesForConstraint.Num() - 1)
+			if (i == 0)
 			{
 				Pusher->GrabComponentAtLocation(PriComp, BoneName, SocketPos);
 			}
@@ -141,7 +142,7 @@ void AMG_TuboSkeleton::Tick(float DeltaTime)
 
 		if (SplineGuide)
 		{
-			for (int i = 0; i < HandlesForConstraint.Num(); ++i)
+			for (int i = BoneStart; i < SkelMeshCompones->GetNumBones(); ++i)
 			{
 				FName BoneName = SkelMeshCompones->GetBoneName(i);
 				FVector SocketPos = SkelMeshCompones->GetSocketLocation(BoneName);
@@ -152,12 +153,37 @@ void AMG_TuboSkeleton::Tick(float DeltaTime)
 					FVector Pos = SplineGuide->SplineComp->FindLocationClosestToWorldLocation(SocketPos, ESplineCoordinateSpace::World);
 					HandlesForConstraint[i]->SetTargetLocation(Pos);
 
-					if (i == HandlesForConstraint.Num() - 1)
+					if (i == BoneStart)
 					{
-						FVector PosSplineEnd = SplineGuide->SplineComp->GetLocationAtDistanceAlongSpline(SplineGuide->SplineComp->GetSplineLength(), ESplineCoordinateSpace::World);
-						Pusher->SetTargetLocation(PosSplineEnd);
+						FVector PosAtBeginSpline = SplineGuide->SplineComp->GetLocationAtDistanceAlongSpline(0.0f, ESplineCoordinateSpace::World);
+						Pusher->SetTargetLocation(PosAtBeginSpline);
 					}
 				}
+			}
+		}
+	}
+}
+
+void AMG_TuboSkeleton::InsertTubo(float DeltaInsertion)
+{
+	if (SplineGuide && SkelMeshCompones)
+	{
+		USplineComponent* SplineComp = SplineGuide->SplineComp;
+		if (SplineComp)
+		{
+			FVector PosInSpline = SplineComp->GetLocationAtDistanceAlongSpline(DeltaInsertion, ESplineCoordinateSpace::World);
+
+			FVector BoneLoc;
+			FName BoneName = SkelMeshCompones->FindClosestBone(PosInSpline, &BoneLoc);
+
+			BoneStart = SkelMeshCompones->GetBoneIndex(BoneName);
+
+			UPrimitiveComponent* PriComp = Cast<UPrimitiveComponent>(SkelMeshCompones);
+			Pusher->GrabComponentAtLocation(PriComp, BoneName, BoneLoc);
+
+			for (int i = 0; i < BoneStart; ++i)
+			{
+				HandlesForConstraint[i]->ReleaseComponent();
 			}
 		}
 	}
