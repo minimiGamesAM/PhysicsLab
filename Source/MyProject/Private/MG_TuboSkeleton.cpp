@@ -13,26 +13,14 @@ AMG_TuboSkeleton::AMG_TuboSkeleton()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
-	for (int i = 0; i < 32; ++i)
-	{
-		FName HandleName = FName(FString::Printf(TEXT("PhyHandleNombre%i"), i));
-		UPhysicsHandleComponent* PhComp = CreateDefaultSubobject<UPhysicsHandleComponent>(HandleName);
-	}
-
-	Pusher = CreateDefaultSubobject<UPhysicsHandleComponent>("Pusher");
+	
+	Pusher = CreateDefaultSubobject<UPhysicsHandleComponent>(TEXT("Pusher"));
 }
 
 void AMG_TuboSkeleton::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
-
-	//FName HandleName = FName(FString::Printf(TEXT("PhyHandleNombre%i"), 0));
-	//MyPhysicsHandle = CreateDefaultSubobject<UPhysicsHandleComponent>("PhCmp");
-	//
-	//HandlesForConstraint.Add(MyPhysicsHandle);
-
-
+	
 	SkelMeshCompones = Cast<USkeletalMeshComponent>(GetComponentByClass(USkeletalMeshComponent::StaticClass()));
 
 	if (SkelMeshCompones)
@@ -65,14 +53,15 @@ void AMG_TuboSkeleton::PostInitializeComponents()
 		}
 
 		NbBones = SkelMeshCompones->GetNumBones();
-				
-		//for (int i = 0; i < NbBones; ++i)
-		//{
-		//	FName HandleName = FName(FString::Printf(TEXT("PhyHandleNombre%i"), i));
-		//	UPhysicsHandleComponent* PhComp = CreateDefaultSubobject<UPhysicsHandleComponent>(HandleName);
-		//
-		//	HandlesForConstraint.Add(PhComp);
-		//}
+
+		HandlesForConstraint.SetNum(NbBones);
+		
+		for (int i = 0; i < SkelMeshCompones->GetNumBones(); ++i)
+		{
+			UPhysicsHandleComponent* PhyHandle = NewObject<UPhysicsHandleComponent>(this);
+			PhyHandle->RegisterComponent();
+			HandlesForConstraint[i] = PhyHandle;
+		}
 	}
 }
 
@@ -80,23 +69,7 @@ void AMG_TuboSkeleton::PostInitializeComponents()
 void AMG_TuboSkeleton::BeginPlay()
 {
 	Super::BeginPlay();
-
-	TArray<UActorComponent*> comps;
-
-	this->GetComponents(comps);
-
-	HandlesForConstraint.Empty();
-
-	for (int i = 0; i < comps.Num(); ++i) //Because there may be more components
-	{
-		UPhysicsHandleComponent* thisCompP = Cast<UPhysicsHandleComponent>(comps[i]); //try to cast to static mesh component
-		if (thisCompP)
-		{
-			thisCompP->SetLinearStiffness(LinearStiffnessInSpline);
-			HandlesForConstraint.Add(thisCompP);
-		}
-	}
-
+	
 	if (SkelMeshCompones)
 	{
 		// Here the mass is calculated. UBodySetup::CalculateMass(const UPrimitiveComponent* Component) const
@@ -112,6 +85,7 @@ void AMG_TuboSkeleton::BeginPlay()
 			FVector SocketPos = SkelMeshCompones->GetSocketLocation(BoneName);
 			
 			HandlesForConstraint[i]->GrabComponentAtLocation(PriComp, BoneName, SocketPos);
+			HandlesForConstraint[i]->SetLinearStiffness(LinearStiffnessInSpline);
 
 			if (i == 0)
 			{
@@ -147,7 +121,12 @@ void AMG_TuboSkeleton::Tick(float DeltaTime)
 				FName BoneName = SkelMeshCompones->GetBoneName(i);
 				FVector SocketPos = SkelMeshCompones->GetSocketLocation(BoneName);
 
-				//SplineGuide = Cast<AMG_Spline>(SplineGuide.GetDefaultObject()); // Cast<AMG_Spline>(SplineGuide.Get());
+				FVector InertiaTensor = SkelMeshCompones->GetInertiaTensor(BoneName);
+
+				// ConstInst->GetSoftSwingLimitStiffness();
+				FString Mensaje = FString::Printf(TEXT("%s: %f, %f, %f"), *BoneName.ToString(), InertiaTensor[0], InertiaTensor[1], InertiaTensor[2]);
+				GEngine->AddOnScreenDebugMessage(-1, 0.0f, FColor::Red, Mensaje);
+
 				if (SplineGuide->SplineComp)
 				{
 					FVector Pos = SplineGuide->SplineComp->FindLocationClosestToWorldLocation(SocketPos, ESplineCoordinateSpace::World);
