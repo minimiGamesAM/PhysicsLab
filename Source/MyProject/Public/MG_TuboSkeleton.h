@@ -53,9 +53,9 @@ protected:
 	TArray<UPhysicsHandleComponent*> HandlesForConstraint;
 
 	UPROPERTY(EditAnywhere, Category = "Constraint")
-	float LinearStiffnessInSpline = 800.0f;
-
-	UPROPERTY(VisibleAnywhere, Category = "Constraint")
+	float LinearStiffnessInSpline = 2000.0f;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Constraint")
 	UPhysicsHandleComponent* Pusher;
 
 	UPROPERTY(EditAnywhere, Category = "Navigacion")
